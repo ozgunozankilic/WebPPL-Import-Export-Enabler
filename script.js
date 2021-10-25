@@ -132,11 +132,23 @@ window.onload = function() {
 			return;
 		}
 		const reader = new FileReader();
-		reader.readAsText(input.files[0]);
 		reader.onload = () => {
-			localStorage.setItem("WebPPLEditorState", reader.result);
-			location.reload();
+			let json;
+			try {
+				json = JSON.parse(reader.result);
+				if (json && typeof json === "object") {
+					if (("selectedFile" in json) && ("markdownOutputOpen" in json) && ("files" in json) && Object.keys(json["files"]).length > 0) {
+						localStorage.setItem("WebPPLEditorState", json);
+						location.reload();
+					} else {
+						alert("Invalid data.");
+					}
+				}
+			} catch (e) {
+				alert("Invalid JSON.");
+			}
 		}
+		reader.readAsText(input.files[0]);
 	}
 	
 	/**
