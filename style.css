@@ -1,0 +1,7 @@
+.modal {
+	background-color: #0000007f;
+}
+
+.modal textarea {
+	resize: vertical;
+}
