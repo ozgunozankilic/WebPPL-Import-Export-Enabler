@@ -2,7 +2,7 @@
 	"manifest_version": 3,
 	"name": "WebPPL Import/Export Enabler",
 	"short_name": "WPPL Import/Export",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "A WebPPL.org extension that lets the user import/export .md files or workspaces.",
 	"author": "Özgün Ozan Kılıç",
 	"action": {

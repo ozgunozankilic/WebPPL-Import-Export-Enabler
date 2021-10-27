@@ -138,7 +138,7 @@ window.onload = function() {
 				json = JSON.parse(reader.result);
 				if (json && typeof json === "object") {
 					if (("selectedFile" in json) && ("markdownOutputOpen" in json) && ("files" in json) && Object.keys(json["files"]).length > 0) {
-						localStorage.setItem("WebPPLEditorState", json);
+						localStorage.setItem("WebPPLEditorState", JSON.stringify(json));
 						location.reload();
 					} else {
 						alert("Invalid data.");
