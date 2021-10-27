@@ -5,15 +5,15 @@
 
 This lightweight Google Chrome extension adds import and export functionalities by parsing files and manipulating the local storage. One can export a notebook as an .md file or the entire workspace as a .json file. It is possible to later import multiple .md files or the workspace at once, making working with the online editor even more portable and convenient.
 
-The extension is tested in Google Chrome, Opera, and Brave. It is likely to work in other browsers as well, especially Chromium-based ones. It seems making adjustments in the manifest is necessary for Firefox.
+The extension is tested in Chrome, Opera, and Brave. It is likely to work in other browsers as well, especially Chromium-based ones. It seems making adjustments in the manifest is necessary for Firefox.
 
 ## Usage
 
-Install the extension from Chrome Web Store or download the .zip file from GitHub for manual installation:
+The current version is waiting for approval from Chrome Web Store. In the meantime, you can download the latest release from [here](https://github.com/ozgunozankilic/WebPPL-Import-Export-Enabler/releases/download/v1.0.2/webppl_import_export_enabler_v1.0.2.zip).
 
-![ss-github](https://user-images.githubusercontent.com/19360437/138624533-2520aba2-ccc1-4c99-b5bf-834ba27150d8.jpg)
+If you choose to manually install it, you will need to enable the developer mode and drag the .zip file to the extensions panel. This step depends on your browser. For Chrome, visit [chrome://extensions/](chrome://extensions/).
 
-If you choose to manually install it, you will likely need to enable the developer mode and drag the file to the extensions panel. This step depends on your browser.
+![ss-github2](https://user-images.githubusercontent.com/19360437/139063345-94d047ab-3c50-493c-bb32-46825cac50e4.jpg)
 
 After installing the extension, you should see two new buttons in the editor:
 
