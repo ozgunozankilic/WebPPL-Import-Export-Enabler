@@ -9,7 +9,7 @@ The extension is tested in Chrome, Opera, and Brave. It is likely to work in oth
 
 ## Usage
 
-You can install it from [Chrome Web Store](https://chrome.google.com/webstore/detail/webppl-importexport-enabl/jjkpdhpdcnhcelpklajpmabbandclpeo) using browsers that support Chrome Web Store. Alternatively, you can download the latest release from [here](https://github.com/ozgunozankilic/WebPPL-Import-Export-Enabler/releases/download/v1.0.2/webppl_import_export_enabler_v1.0.2.zip).
+You can install it from [Chrome Web Store](https://chrome.google.com/webstore/detail/webppl-importexport-enabl/jjkpdhpdcnhcelpklajpmabbandclpeo) using browsers that support Chrome Web Store. Updates are published there a few days behind as the approval procedure takes time, but you would automatically get the updates. Alternatively, you can download the latest release from [here](https://github.com/ozgunozankilic/WebPPL-Import-Export-Enabler/releases/download/v1.0.3/webppl_import_export_enabler_v1.0.3.zip).
 
 If you choose to manually install it, you will need to enable the developer mode and drag the .zip file to the extensions panel. This step depends on your browser. For Chrome, visit [chrome://extensions/](chrome://extensions/).
 
