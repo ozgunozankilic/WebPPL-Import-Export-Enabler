@@ -68,7 +68,8 @@ window.onload = function() {
 					block_counter += 1;
 				}
 				for (let i = 0; i < tilde_starts.length; i += 2) {
-					let code = content.substring(tilde_starts[i]+4, tilde_starts[i+1]).trim();
+					// The code is assumed to start not after four consecutive tildes but with the new line that comes after them. 
+					let code = content.substring(content.indexOf("\n", tilde_starts[i]+4)+1, tilde_starts[i+1]).trim();
 					if (code) {
 						file["blocks"][block_counter] = {"type": "code", "content": code, "orderingKey": block_counter};
 						block_counter += 1;
