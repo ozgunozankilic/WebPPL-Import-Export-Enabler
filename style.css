@@ -5,3 +5,12 @@
 .modal textarea {
 	resize: vertical;
 }
+
+.modal-body {
+	max-height: calc(100vh - 125px);
+	overflow-y: auto;
+}
+
+#fileSelector select {
+	max-width: 160px;
+}
