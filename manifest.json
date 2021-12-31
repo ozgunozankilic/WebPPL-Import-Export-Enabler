@@ -2,7 +2,7 @@
 	"manifest_version": 3,
 	"name": "WebPPL Import/Export Enabler",
 	"short_name": "WPPL Import/Export",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "A WebPPL.org extension that lets the user import/export .md files or workspaces and convert datasets into variables.",
 	"author": "Özgün Ozan Kılıç",
 	"action": {
