@@ -613,7 +613,12 @@ window.onload = function() {
 			let storage = JSON.parse(localStorage.getItem("WebPPLEditorState"));
 			let file_id = storage["selectedFile"];
 			let blocks = storage["files"][file_id]["blocks"];
-			let order = Math.max(...Object.keys(blocks)) + 1;
+			let order;
+			if (Object.keys(blocks).length === 0) {
+				order = 0;
+			} else {
+				order = Math.max(...Object.keys(blocks)) + 1;
+			}
 			storage["files"][file_id]["blocks"][order] = {"type": "code", "content": dataset_block, "orderingKey": order};
 			localStorage.setItem("WebPPLEditorState", JSON.stringify(storage))
 			location.reload();
