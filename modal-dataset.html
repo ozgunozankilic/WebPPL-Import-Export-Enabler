@@ -1,0 +1,24 @@
+<div class="modal" id="modal-dataset" tabindex="-1" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close" title="Close"><span aria-hidden="true">×</span></button>
+				<h4 class="modal-title" id="modal-title">Dataset</h4>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label for="dataset-text" class="control-label">Conversion result:</label>
+					<textarea style="white-space: normal;" class="form-control" id="dataset-text" rows="10"></textarea>
+					<div class="pull-right">
+						<input type="checkbox" aria-label="Text wrap" id="dataset-text-wrap" checked> <label style="font-weight: revert" for="dataset-text-wrap">Text wrap</label>
+					</div><br />
+				</div>
+				<p>You can edit this dataset and copy to clipboard to paste it anywhere you like. You can also directly insert it into your current file as a code block.</p>
+				<div class="text-right">
+					<button class="btn btn-default" id="btn-copy-dataset">copy to clipboard</button>
+					<button class="btn btn-default" id="btn-insert-dataset">insert into file</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

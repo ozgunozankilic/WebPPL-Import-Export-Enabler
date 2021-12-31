@@ -10,6 +10,40 @@ window.onload = function() {
 	}
 	
 	/**
+	 * Gets cookie value if cookie exists. If not, returns an empty string. Adapted from: https://www.w3schools.com/js/js_cookies.asp
+	 * @param {string} cname - Name of the cookie.
+	 * @returns {string} - Cookie content.
+	 */
+	function get_cookie(cname) {
+		let name = cname + "=";
+		let decodedCookie = document.cookie;
+		let ca = decodedCookie.split(";");
+		for(let i = 0; i < ca.length; i++) {
+			let c = ca[i];
+			while (c.charAt(0) == " ") {
+				c = c.substring(1);
+			}
+			if (c.indexOf(name) == 0) {
+				return c.substring(name.length, c.length);
+			}
+		}
+		return "";
+	}
+	
+	/**
+	 * Sets cookie. Adapted from: https://www.w3schools.com/js/js_cookies.asp
+	 * @param {string} cname - Name of the cookie.
+	 * @param {string} cvalue - Value of the cookie.
+	 * @param {number} exdays - Number of days for which the cookie will be stored.
+	 */
+	function set_cookie(cname, cvalue, exdays=365) {
+		const d = new Date();
+		d.setTime(d.getTime() + (exdays*24*60*60*1000));
+		let expires = "expires=" + d.toUTCString();
+		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+	}
+	
+	/**
 	 * Creates and downloads a file.
 	 * @param {string} filename - Name of the file, including its extension.
 	 * @param {string} content - Content to be downloaded.
@@ -89,6 +123,138 @@ window.onload = function() {
 	}
 	
 	/**
+	 * Converts CSV to an array. Adapted from: https://stackoverflow.com/a/8497474/4825304
+	 * @param {string} text - Contents of the CSV file.
+	 * @param {string} separator - A non-whitespace separator.
+	 * @returns {array} - Text converted into an array.
+	 */
+	function csv_to_array(text, separator) {
+		separator = separator.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); // Escaping for RegExp
+		
+		let re_valid = new RegExp(`^\\s*(?:\'[^\'\\\\]*(?:\\\\[\\S\\s][^\'\\\\]*)*\'|\"[^\"\\\\]*(?:\\\\[\\S\\s][^\"\\\\]*)*\"|[^${separator}\'\"\\s\\\\]*(?:\\s+[^${separator}\'\"\\s\\\\]+)*)\\s*(?:${separator}\\s*(?:\'[^\'\\\\]*(?:\\\\[\\S\\s][^\'\\\\]*)*\'|\"[^\"\\\\]*(?:\\\\[\\S\\s][^\"\\\\]*)*\"|[^${separator}\'\"\\s\\\\]*(?:\\s+[^${separator}\'\"\\s\\\\]+)*)\\s*)*\$`);
+		
+		let re_value = new RegExp(`(?!\\s*\$)\\s*(?:\'([^\'\\\\]*(?:\\\\[\\S\\s][^\'\\\\]*)*)\'|\"([^\"\\\\]*(?:\\\\[\\S\\s][^\"\\\\]*)*)\"|([^${separator}\'\"\\s\\\\]*(?:\\s+[^${separator}\'\"\\s\\\\]+)*))\\s*(?:${separator}|\$)`, "g");
+		
+		// Returns NULL if input string is not well formed CSV string.
+		if (!re_valid.test(text)) return null;
+		let a = []; // Initialize array to receive values.
+		text.replace(re_value, // "Walk" the string using replace with callback.
+			function(m0, m1, m2, m3) {
+				// Removes backslash from \' in single quoted values.
+				if (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
+				// Removes backslash from \" in double quoted values.
+				else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
+				else if (m3 !== undefined) a.push(m3);
+				return ''; // Return empty string.
+			});
+		// Handles special case of empty last value.
+		if (/,\s*$/.test(text)) a.push('');
+		return a;
+	}
+	
+	/**
+	 * Converts CSV or JSON content to a variable.
+	 * @param {string} content - Contents of the MD file.
+	 * @param {string} filename - Name of the file, excluding its extension, to be used in localStorage.
+	 * @param {string} separator - Separator that will be used to separate values in the row (for CSV files).
+	 * @param {boolean} has_headers - A boolean indicating whether the dataset has headers (for CSV files).
+	 * @param {boolean} use_headers - A boolean indicating whether the headers will be used for column naming (for CSV files).
+	 * @param {string} orientation - A string indicating whether the dataset will be imported in row-first or column-first format.
+	 * @returns {string} - Imported dataset variable.
+	 */
+	function dataset_to_variable(content, filename, separator=",", has_headers=true, use_headers=true, orientation="row") {
+		content = content.trim().replace(/\r\n/g, "\n\n");
+		if (!content) {
+			if (filename) {
+				alert("Dataset file is empty.");
+			}
+			return false;
+		}
+		let last_period = filename.lastIndexOf(".");
+		let dataset_name = filename.substring(0, last_period);
+		if (/^\d/.test(dataset_name)) {
+			dataset_name = "dataset_" + dataset_name;
+		}
+		let dataset_format = filename.substring(last_period+1).toLowerCase();
+		
+		let variable;
+		if (dataset_format == "json") {
+			// Handles JSON.
+			variable = "var " + dataset_name + " = " + content + ";";
+		} else {
+			// Handles CSV.
+			variable = "var " + dataset_name + " = ";
+			if (orientation == "row") { // Row-first
+				variable += "[";
+			}
+			let rows = content.split("\n\n");
+			let columns = [];
+			
+			// Does not treat the first row as data if it is declared the dataset has headers.
+			let row_start = 1;
+			if (!has_headers) {
+				use_headers = false;
+				row_start = 0;
+			}
+			
+			let row_format;
+			if (use_headers) {
+				columns = csv_to_array(rows[0], separator);
+				row_format = {}
+			} else {
+				let row = csv_to_array(rows[0], separator);
+				columns = [...Array(row.length).keys()];
+				row_format = [];
+			}
+			
+			let simplify = false;
+			if (columns.length == 1) {
+				simplify = confirm("Your dataset has only one column. Would you like to simplify it into a one-dimensional array?");
+			}
+			
+			let column_values = row_format; // Used for column-first imports.
+			for (let col_i = 0; col_i < columns.length; col_i++) {
+				column_values[columns[col_i]] = [];
+			}
+			for (let i = row_start; i < rows.length; i++) {
+				let row = row_format; // Used for row-first imports.
+				if (i > row_start && orientation == "row") {
+					variable += ",";
+				}
+				let cells = csv_to_array(rows[i], separator);
+				if (cells.length !== columns.length) {
+					alert("Error: Your dataset contains rows with differing lengths.");
+					return false;
+				}
+				for (let cell_i = 0; cell_i < cells.length; cell_i++) {
+					let cell = isNaN(cells[cell_i]) ? cells[cell_i] : Number(cells[cell_i]); 
+					if (orientation == "row") { // Row-first
+						if (simplify) {
+							row = cell;
+						} else {
+							row[columns[cell_i]] = cell;
+						}
+					} else { // Column-first
+						column_values[columns[cell_i]].push(cell);
+					}
+				}
+				if (orientation == "row") { // Row-first
+					variable += JSON.stringify(row);
+				}
+			}
+			if (orientation == "row") { // Row-first
+				variable += "];";
+			} else { // Column-first			
+				if (simplify) {
+					column_values = column_values[columns[0]];
+				}
+				variable += JSON.stringify(column_values) + ";";
+			}
+		}
+		return variable;
+	}
+	
+	/**
 	 * Imports the files and adds them to the workspace.
 	 * @param {Object} input - File input object.
 	 */
@@ -142,14 +308,77 @@ window.onload = function() {
 						localStorage.setItem("WebPPLEditorState", JSON.stringify(json));
 						location.reload();
 					} else {
-						alert("Invalid data.");
+						alert("Error: Invalid data.");
 					}
 				}
 			} catch (e) {
-				alert("Invalid JSON.");
+				alert("Error: Invalid JSON.");
 			}
 		}
 		reader.readAsText(input.files[0]);
+	}
+	
+	/**
+	 * Imports a dataset.
+	 * @param {Object} input - File input object.
+	 */
+	function import_dataset(input) {
+		let imported = 0;
+		let dataset_block = "";
+		
+		/**
+		 * Increases the number of imported datasets and sends the import to the dataset modal once it is finished.
+		 * @param {number} id - Handled file's ID.
+		 * @param {boolean} status - Import result.
+		 */
+		function import_callback(id, status) {
+			if (status) {
+				imported += 1;
+			}
+			if (id+1 == input.files.length) {
+				if (imported > 0) {
+					// Close the import modal.
+					let modal_import = document.getElementById("modal-import");
+					modal_import.style.display = "none";
+					modal_import.setAttribute("aria-hidden", "true");
+					
+					// Inject the dataset variable into the dataset modal and open the dataset modal.
+					document.getElementById("dataset-text").innerHTML = dataset_block;
+					let modal_dataset = document.getElementById("modal-dataset");
+					modal_dataset.style.display = "block";
+					modal_dataset.setAttribute("aria-hidden", "false");
+					
+					// Stores whether the last dataset had headers.
+					set_cookie("dataset_has_headers", encodeURIComponent(document.getElementById("dataset-has-headers").checked));
+					// Stores whether the last dataset used header names.
+					set_cookie("dataset_use_headers", encodeURIComponent(document.getElementById("dataset-use-headers").checked));
+					// Stores the last used separator in a cookie.
+					set_cookie("dataset_separator", encodeURIComponent(document.getElementById("dataset-separator").value));
+					// Stores the last used orientation in a cookie.
+					set_cookie("dataset_orientation", encodeURIComponent(document.getElementById("dataset-orientation").value));
+				}
+			}
+		}
+		
+		// Handles the files in a loop. Technically supports multiple files but it is not allowed since each file may require different settings.
+		for (let i = 0; i < input.files.length; i++) {
+			let reader = new FileReader();
+			let has_headers = document.getElementById("dataset-has-headers").checked;
+			let use_headers = document.getElementById("dataset-use-headers").checked;
+			let separator = document.getElementById("dataset-separator").value;
+			let orientation = document.getElementById("dataset-orientation").value;
+			reader.onload = (event) => {
+				try {
+					let imported = dataset_to_variable(reader.result, filename, separator, has_headers, use_headers, orientation);
+					dataset_block += imported;
+					import_callback(i, imported);
+				} catch(err) {
+					alert("Dataset could not be parsed. Check for formatting errors.");
+				}
+			}
+			let filename = input.files[i].name;
+			reader.readAsText(input.files[i]);
+		}
 	}
 	
 	/**
@@ -208,6 +437,12 @@ window.onload = function() {
 		.then((data) => data.text())
 		.then((data_text) => document.getElementsByClassName("panel-default")[0].insertAdjacentHTML("beforebegin", data_text))
 		.then(() => modal_import_ready());
+		
+	// Fetches the import modal and adds it to the page.
+	fetch(chrome.runtime.getURL("modal-dataset.html"), {headers: {"Content-Type": "text/html"}})
+		.then((data) => data.text())
+		.then((data_text) => document.getElementsByClassName("panel-default")[0].insertAdjacentHTML("beforebegin", data_text))
+		.then(() => modal_dataset_ready());
 	
 	// Fetches the export modal and adds it to the page.
 	fetch(chrome.runtime.getURL("modal-export.html"), {headers: {"Content-Type": "text/html"}})
@@ -239,7 +474,7 @@ window.onload = function() {
 				file_count_label = file_count + " files";
 			}
 			document.getElementById("workspace-file-count").innerHTML = file_count_label;
-			let active_file = document.getElementsByTagName("select")[0].selectedOptions[0].text;
+			let active_file = document.querySelectorAll("#fileSelector > select")[0].selectedOptions[0].text;
 			document.getElementById("export-file-name").value = active_file;
 			modal_export.style.display = "block";
 			modal_export.setAttribute("aria-hidden", "false");
@@ -286,6 +521,102 @@ window.onload = function() {
 		// Imports a workspace.
 		document.getElementById("btn-import-workspace").addEventListener("click", function (event) {
 			import_workspace(document.getElementById("import-workspace"));
+		});
+		
+		// Imports dataset.
+		document.getElementById("btn-import-dataset").addEventListener("click", function (event) {
+			import_dataset(document.getElementById("import-dataset"));
+		});
+		
+		// Disables using header names when there are no headers.
+		document.getElementById("dataset-has-headers").addEventListener("change", function() {
+			if (!this.checked) {
+				document.getElementById("dataset-use-headers").checked = false;
+			} 
+		});
+		
+		// Necessitates having headers when header names are used.
+		document.getElementById("dataset-use-headers").addEventListener("change", function() {
+			if (this.checked) {
+				document.getElementById("dataset-has-headers").checked = true;
+			} 
+		});
+	}
+	
+	// Adds some event listeners to the dataset modal.
+	function modal_dataset_ready() {
+		// Remembers the existence of headers.
+		let has_headers_cookie = decodeURIComponent(get_cookie("dataset_has_headers"));
+		if (has_headers_cookie === "false") {
+			document.getElementById("dataset-has-headers").checked = false;
+		}
+		// Remembers the use of header names.
+		let use_headers_cookie = decodeURIComponent(get_cookie("dataset_use_headers"));
+		if (use_headers_cookie === "false") {
+			document.getElementById("dataset-use-headers").checked = false;
+		}
+		// Remembers the preferred separator.
+		let separator_cookie = decodeURIComponent(get_cookie("dataset_separator"));
+		if (separator_cookie) {
+			document.getElementById("dataset-separator").value = separator_cookie;
+		}
+		// Remembers the preferred orientation.
+		let orientation_cookie = decodeURIComponent(get_cookie("dataset_orientation"));
+		if (orientation_cookie) {
+			document.getElementById("dataset-orientation").value = orientation_cookie;
+		}
+		// Remembers the text-wrap preference.
+		let dataset_text_wrap_cookie = decodeURIComponent(get_cookie("dataset_text_wrap"))
+		if (dataset_text_wrap_cookie === "false") {
+			document.getElementById("dataset-text-wrap").checked = false;
+			document.getElementById("dataset-text").style.whiteSpace = "nowrap";
+		}
+		
+		// Changes text wrapping of the imported dataset text based on the checkbox.
+		document.getElementById("dataset-text-wrap").addEventListener("change", function() {
+			if (this.checked) {
+				document.getElementById("dataset-text").style.whiteSpace = "normal";
+				set_cookie("dataset_text_wrap", true);
+			} else {
+				document.getElementById("dataset-text").style.whiteSpace = "nowrap";
+				set_cookie("dataset_text_wrap", false);
+			}
+		});
+		
+		// Closes the modal when clicked on the closing button or outside the modal frame.
+		document.getElementById("modal-dataset").addEventListener("click", function (event) {
+			if (!this.getElementsByClassName("modal-dialog")[0].contains(event.target) || this.getElementsByClassName("close")[0].contains(event.target)) {
+				this.style.display = "none";
+				this.setAttribute("aria-hidden", "true");
+			}
+		});
+		
+		// Copies the data variable to the clipboard.
+		document.getElementById("btn-copy-dataset").addEventListener("click", function (event) {
+			let dataset_text = document.getElementById("dataset-text");
+			
+			// Copies to clipboard using navigator.clipboard if available. If not, uses the old method.
+			if (navigator.clipboard && window.isSecureContext) {
+				// WebPPL.org is currently not served over HTTPS, so it does not support navigator.clipboard.
+				navigator.clipboard.writeText(dataset_text.value)
+			} else {
+				// This fallback method is actually deprecated, so it might stop working in the future.
+				dataset_text.focus();
+				dataset_text.select();
+				document.execCommand("copy");
+			}
+		});
+		
+		// Inserts the data variable to the current file as a clode block.
+		document.getElementById("btn-insert-dataset").addEventListener("click", function (event) {
+			let dataset_block = document.getElementById("dataset-text").value;
+			let storage = JSON.parse(localStorage.getItem("WebPPLEditorState"));
+			let file_id = storage["selectedFile"];
+			let blocks = storage["files"][file_id]["blocks"];
+			let order = Math.max(...Object.keys(blocks)) + 1;
+			storage["files"][file_id]["blocks"][order] = {"type": "code", "content": dataset_block, "orderingKey": order};
+			localStorage.setItem("WebPPLEditorState", JSON.stringify(storage))
+			location.reload();
 		});
 	}
 	

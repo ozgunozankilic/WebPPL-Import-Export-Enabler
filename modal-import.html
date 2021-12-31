@@ -21,11 +21,47 @@
 				</div>
 				<hr>
 				<h4>Workspace</h4>
-				<p class="text-danger"><strong>Warning:</strong> This will overwrite your current workspace. You may want to save your current files before proceeding.</p>
+				<p class="text-danger"><strong>Warning:</strong> This will overwrite your current workspace. You may want to backup your current files or workspace before proceeding.</p>
 				<label for="import-workspace" class="control-label">Choose a JSON file:</label>
 				<div class="input-group">
 					<input class="form-control" type="file" accept=".json" id="import-workspace">
 					<span class="input-group-btn"><button class="btn btn-default" id="btn-import-workspace">import</button></span>
+				</div>
+				<hr>
+				<h4>Dataset</h4>
+				<p>This will import and parse datasets to convert them into usable variables. Cell values that are castable to numbers in your CSV file are automatically converted.</p>
+				<label for="import-dataset" class="control-label">Choose a CSV or JSON file:</label>
+				<div class="form-group">
+					<div class="input-group">
+						<input class="form-control" type="file" accept=".csv,.json" id="import-dataset">
+						<span class="input-group-btn"><button class="btn btn-default" id="btn-import-dataset">import</button></span>
+					</div>
+				</div>
+				
+				<div class="form-group">
+					<label class="control-label">CSV options</label><br />
+					<div class="row">
+						<div class="col-xs-6">
+							<label class="control-label">Headers:</label> <span role="button" onclick="alert(`Headers are the column names in CSV. If your dataset does not have any column names, your data starts from the first line. In this case, you need to uncheck the &quot;has headers&quot; option. If you prefer to use index values instead of column names (dataset[0][0] instead of dataset[0][&quot;column&quot;]), you need to check the &quot;use header names&quot; option.`)" class="glyphicon glyphicon glyphicon-info-sign text-danger" aria-label="info"></span><br />
+							<div class="pull-left">
+								<input type="checkbox" aria-label="Has headers" id="dataset-has-headers" checked> <label style="font-weight: revert" for="dataset-has-headers">Has headers</label>
+							</div>
+							<div class="pull-right">
+								<input type="checkbox" aria-label="Use column names" id="dataset-use-headers" checked> <label style="font-weight: revert" for="dataset-use-headers">Use header names</label>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<label class="control-label">Separator:</label> <span role="button" onclick="alert(`Separator is a single specific character that is used to separate cells of a row in CSV. By default, it is a comma (,). Note that your separator cannot be a white-space character such as space or tab. If your separator occurs in a cell, the cell value must be enclosed within &quot; &quot; or &#39; &#39;.`)" class="glyphicon glyphicon glyphicon-info-sign text-danger" aria-label="info"></span><br />
+							<input class="form-control input-sm" id="dataset-separator" value=",">
+						</div>
+						<div class="col-xs-3">
+							<label class="control-label">Orientation:</label> <span role="button" onclick="alert(`Orientation defines the access priority. When you import a dataset in row-first orientation, you access the first row&#39;s &quot;column&quot; column using dataset[0][&quot;column&quot;]. In column-first orientation, you use dataset[&quot;column&quot;][0]. A column-first orientation is more convenient for column operations.`)" class="glyphicon glyphicon glyphicon-info-sign text-danger" aria-label="info"></span><br />
+							<select id="dataset-orientation">
+								<option value="row">Row-first</option>
+								<option value="column">Column-first</option>
+							</select>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
